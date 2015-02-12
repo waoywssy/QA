@@ -45,6 +45,7 @@ public class SQLHelper {
     public static String DB_QA = "mj_auto_qa";
     public static final String DB_QA_DATA = "Qa_DataStatistic1";
     public static final String JOB_CENTRAL_IP ="10.8.253.41"; //"10.8.253.41";//"10.15.0.47";//"10.8.253.41";//10.10.0.40
+    public static final String JOB_CENTRAL_TEST_IP ="10.10.0.41"; 
     public static String LOCAL_IP = "127.0.0.1";
     public static String DRIVER = DataSourceFactory.DRIVER_MSSQL;
     private final static int maxConnections = 15;

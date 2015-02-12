@@ -1,7 +1,6 @@
 <html>
     <head>
         <title>QA</title>
-
         <link rel="shortcut icon" type="image/ico" href="/favicon.ico" />
         <!--link rel="stylesheet" href="ext/resources/css/ext-all.css" type="text/css" /-->
         <link rel="stylesheet" href="ext/resources/ext-theme-neptune/ext-theme-neptune-all.css" type="text/css" />
@@ -12,9 +11,12 @@
         <script type="text/javascript" src="ext/examples.js"></script>
         <script type="text/javascript" src="app/share.js"></script>
         <script type="text/javascript">
+            // 设置命名空间 'Ext.ux' 和 'qa' 的路径
+            // ExtJS 4+ 的新特性，为 Ext.require 提供支持
             Ext.Loader.setPath('Ext.ux', 'ext/ux/');
             Ext.Loader.setPath('qa', 'app');
 
+            // 根据类名加载需要的组件类
             Ext.require([
                 'Ext.tip.*',
                 'Ext.ux.TabCloseMenu',
@@ -25,21 +27,25 @@
                 'qa.QueryEditor',
                 'qa.ScheduledScriptPanel',
                 'qa.ToolsTreePanel',
+                'qa.BotSchedulePanel',
                 'qa.NoteEditor',
                 'qa.report.*',
                 'qa.reportdesign.*'
             ]);
-
+            // 类似于ArrayList，存放全局变量用
             var globalFinalVariables = new Ext.util.MixedCollection();
             var standardValueSetting;
             var infoTip;
+            
+            // 当DOM完成加载，需要的类也已经就绪，立即执行传入 Ext.onReady的function
             Ext.onReady(function() {
+                // 根据full name, alias or alternate name创建一个类的实例
                 standardValueSetting = Ext.create('qa.StandardValueSetting');
                 infoTip = Ext.create('Ext.tip.ToolTip', {
                     width: 400,
-                    trackMouse: false,
-                    loader: {
-                        url: 'TreeNodeServlet?method=showNote',
+                    trackMouse: false, // 是否跟随鼠标
+                    loader: { // 给Tip指定加载内容的来源
+                        url: 'TreeNodeServlet?method=showNote', // 提供内容的URL
                         renderer: function(loader, response, active) {
                             var text = response.responseText;
                             loader.getTarget().update(text);
@@ -48,27 +54,36 @@
                     },
                     dismissDelay: 15000 // auto hide after 15 seconds
                 });
-                Ext.QuickTips.init();
+                Ext.QuickTips.init(); // 在第一次使用Tips之前要调用一次初始化方法
 
+                // 发送Ajax请求
                 Ext.Ajax.request({
                     url: 'data/globalFinalVariables.xml',
                     success: function(response) {
-                        var xml = response.responseXML;
+                        var xml = response.responseXML; //获取返回的XML
+                        // 类似jQuery的selector，
+                        // 详见 http://docs.sencha.com/extjs/4.2.1/#!/api/Ext.dom.Query
                         var dq = Ext.DomQuery;
                         var node = dq.selectNode('root', xml);
                         node = node.firstElementChild;
                         do {
+                            // 将XML文件中的节点加入到全局变量里面，干啥用？给JCPenneyPrice？
+                            // 应该是企图实现某种功能，结果没写完
                             globalFinalVariables.add(node.nodeName, node.textContent);
+                            // console.log(node.textContent);
                             node = node.nextElementSibling;
                         } while (node)
                     }
                 });
+                // 追加一个event handler给Ajax, 
+                // 则 Ext.Ajax 多了一个requestexception事件
+                // 详：http://docs.sencha.com/extjs/4.2.1/#!/api/Ext.Ajax
                 Ext.Ajax.addListener('requestexception', function(conn, response, options, eOpts) {
-                    alert('network problem');
+                    alert('Network Problem!');
                 });
 
                 window.viewport = Ext.create('Ext.Viewport', {
-                    layout: 'border',
+                    layout: 'border', // 确保自定panel与左边栏并列显示
                     items: [{
                             region: 'west',
                             stateId: 'navigation-panel',
@@ -144,7 +159,6 @@
                                 }]
                         }]
                 });
-
                 window.notepad = Ext.create('qa.NoteEditor');
 
                 document.onkeydown = function(e) {
@@ -171,11 +185,18 @@
                     }
                 }
                 Ext.QuickTips.init();
+                
+                var tabPanel = window.viewport.child('tabpanel');
+                tabPanel.add({
+                    xtype:'botschedulepanel',
+                    itemId:123,
+                    title:"Bots need QA",
+                    closable:false,
+                    isDefault:true
+                }).show();
             });
         </script>
-
     </head>
     <body>
-
     </body>
 </html>

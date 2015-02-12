@@ -126,65 +126,80 @@ Ext.define('qa.report.TableChart', {
     }, //end initComponent
     renderTable: function() {
         var json = this.data;
-        var table = "<table class='qaResult'>";
-        var title;
+        var tHeader, tBody;
+        var tTitle, table, caption;
         var reportID = json["reportID"];
         if (reportID > 0) {
-            title = "<a class='openReportSetting' href='javascript:void(0)'>"
-            title += json["reportName"] + "</a>";
+            tTitle = "<a class='openReportSetting' href='javascript:void(0)'>" + json["reportName"] + "</a>";
         } else {
-            title = json["reportName"];
+            tTitle = json["reportName"];
         }
-        table += "<caption>" + title;
+        var isRunTable = 0;
+        var hasError = false;
+        if (json["reportName"] == 'Maj_Runs'){
+            isRunTable = 1;
+        }
+        caption = '';
         if (reportID > 0) {
-            table += "<img src='icons/application_go.png' class='exportselectedcolumn' alt='export selected column'>";
+            caption += "<img src='icons/application_go.png' class='exportselectedcolumn' alt='export selected column'>";
         }
         if (json["referQueryID"] > 0) {
-            table += "<img src='icons/connect.gif' class='openAutoQaScript' alt='export selected column'>";
+            caption += "<img src='icons/connect.gif' class='openAutoQaScript' alt='export selected column'>";
         }
-        table += "<img src='icons/cog.png' class='setStandarValues' alt='Stardard value setting'>";
-        table += "<img src='icons/reload.png' class='reload' alt='reload'>";
-        table += "<img src='icons/information.png' class='viewNote' alt='Stardard value setting' onmouseover='showNote(this," + reportID + ")'>";
-
-        table += "</caption>";
+        caption += "<img src='icons/cog.png' class='setStandarValues' alt='Stardard value setting'>";
+        caption += "<img src='icons/reload.png' class='reload' alt='reload'>";
+        caption += "<img src='icons/information.png' class='viewNote' alt='Stardard value setting' onmouseover='showNote(this," + reportID + ")'>";
+        caption += "</caption>";
 
         //table header
-        table += "<tr>";
+        tHeader = "<tr>";
         for (var i = 0; i < json["headers"].length; i++) {
             if (!json["headers"][i]["show"]) {
-                table += "<th style='display:none;'></th>";
+                tHeader += "<th style='display:none;'></th>";
             } else {
-                title = "" + json["headers"][i]["min"] + "~" + json["headers"][i]["max"] + ";" + json["headers"][i]["minp"] + "~" + json["headers"][i]["maxp"];
-                table += "<th title='" + title + "'>" + json["headers"][i]["name"] + "</th>";
+                var title = "" + json["headers"][i]["min"] + "~" + json["headers"][i]["max"] + ";" + json["headers"][i]["minp"] + "~" + json["headers"][i]["maxp"];
+                tHeader += "<th title='" + title + "'>" + json["headers"][i]["name"] + "</th>";
             }
         }
-        table += "</tr>";
+        tHeader += "</tr>";
+        
         //table content
+        tBody = '';
         var startRow = json.startRow;
         for (var i = 0; json["values"] && i < json["values"].length; i++) {
             var row = json["values"][i];
-            table += "<tr>";
+            tBody += "<tr>";
             var total = json["totalColumn"] == -1 ? null : row[json["totalColumn"]];
             for (var j = 0; j < json["headers"].length; j++) {
+                if (isRunTable && json["headers"][j]['name'] == 'Success'){
+                    console.log(row[j]);
+                }
+                
                 if (!json["headers"][j]["show"]) {
-                    table += "<td style='display:none;'></td>";
-                } else if (startRow == 1//从第一行开始分析
-                    || (startRow == 0 && i == 0)//只分析第一行
-                    || (startRow == 2 && i != 0)) //从第二行开始分析
-                    {
-                    table += "<td" + this.validateValue(row[j], total, json["headers"][j]) + ">" + row[j] + "</td>";
+                    tBody += "<td style='display:none;'></td>";
+                } else if (startRow == 1//从第一行开始分�?
+                    || (startRow == 0 && i == 0)//只分析第一�?
+                    || (startRow == 2 && i != 0)) //从第二行开始分�?
+                {
+                    var err = this.validateValue(row[j], total, json["headers"][j]);
+                    if (!hasError && err == " class='error'"){
+                        hasError = true;
+                    }
+                    tBody += "<td" + err + ">" + row[j] + "</td>";
                 } else {
-                    table += "<td>" + row[j] + "</td>";
+                    tBody += "<td>" + row[j] + "</td>";
                 }
             }
-            table += "</tr>";
+            tBody += "</tr>";
         }
-
         if (json["error"] && json["error"].length > 0) {
-            table += "<tr><td>" + json["error"] + "</tr></td>";
+            tBody += "<tr><td>" + json["error"] + "</tr></td>";
         }
-        table += "</table>";
-
+        if (hasError){
+            tTitle = "<span class='error'>" + tTitle + "</span>";    
+        }
+        
+        table = "<table class='qaResult'><caption>" + tTitle + caption + tHeader + tBody + "</table>";
         this.update(table);
     }, //end renderTable
     error: " class='error'",
@@ -221,11 +236,10 @@ Ext.define('qa.report.TableChart', {
         headers.sort(function compare(a, b) {
             if (a.originalColumn > b.originalColumn) {
                 return 1;
-            } else if (a.originalColumn < b.originalColumn) {
+            } else if (a.originalColumn < b.originalColumn) { 
                 return -1;
-            } else {
-                return 0;
-            }
+            } 
+            return 0;
         });
         table += "<tr style='text-align:left'><th>Name</th><th>Value</th><th>Flu</th><th>Min</th><th>Max</th><th>MinP</th><th>MaxP</th></tr>";
         var original = "";
@@ -246,9 +260,9 @@ Ext.define('qa.report.TableChart', {
             table += "<td>" + header["minp"] * 100 + "</td>";
             table += "<td>" + header["maxp"] * 100 + "</td>";
             table += "</tr>";
-
         }
         table += "</table>";
+
         var win = Ext.create('Ext.window.Window', {
             width: 600,
             height: 500,

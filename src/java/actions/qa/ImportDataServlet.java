@@ -37,11 +37,13 @@ public class ImportDataServlet extends HttpServlet {
         String method = request.getParameter("method");
         try {
             if ("importJobInfo".equals(method)) {
+                // 导入job信息
                 int jobId = NumericHelper.toInt(request.getParameter("JobID"));
                 String server = request.getParameter("server");
                 new ImportDataDao().importJobInfo(server, jobId);
                 out.print("{success:true,msg:'success'}");
             } else if ("importdata".equals(method)) {
+                // 导入数据信息
                 String fromServer = request.getParameter("fromServer");
                 String toServer = request.getParameter("toServer");
                 String toTable = request.getParameter("toTable");

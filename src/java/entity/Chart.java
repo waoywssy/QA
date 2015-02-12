@@ -57,7 +57,8 @@ public abstract class Chart {
             }
             HashMap<String, Object> params = new HashMap<String, Object>();
             params.put("node", reportID);
-            SqlCommand command = new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, CommandType.StoredProcedure, "sp_getQuery", params);
+            SqlCommand command = new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA,
+                    CommandType.StoredProcedure, "sp_getQuery", params);
             HashMap<String, Object> cells = SQLHelper.executeCommand(command, new MapRowHandler());
 
             this.reportName = (String) cells.get("name");
@@ -74,7 +75,8 @@ public abstract class Chart {
             this.groupClause = (String) cells.get("GroupClause");
             this.totalColumnName = (String) cells.get("TotalItemColumn");
             //set report parameters
-            command = new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, CommandType.Text, "SELECT * FROM Qa_Query_Params WHERE ReportID = " + reportID);
+            command = new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, CommandType.Text, 
+                    "SELECT * FROM Qa_Query_Params WHERE ReportID = " + reportID);
             CachedRowSet rowSet = SQLHelper.executeCommand(command, new CachedRowSetResultHandler());
             rParams = new QueryParameter[rowSet.size()];
             int i = 0;

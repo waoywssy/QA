@@ -72,11 +72,12 @@ public class ViewReportServlet extends HttpServlet {
                 JSONArray root = new JSONArray();
                 JSONObject error = new JSONObject();
                 try {
-                    TableChart tableChart = new TableChart(-botID);
+                    TableChart tableChart = new TableChart(-botID); // Run表
                     root.add(tableChart.viewReport(null));
                     SqlCommand command = new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, CommandType.Text, "SELECT id FROM dbo.Nodes WHERE nodeType=15 AND parentId=(SELECT id FROM dbo.Nodes WHERE nodeType=-15 AND refer = " + botID + ")");
                     CachedRowSet rowSet = SQLHelper.executeCommand(command, new CachedRowSetResultHandler());
                     while (rowSet.next()) {
+                        // 添加所有的Report表
                         Chart reportInfo = ChartFactory.getChart(rowSet.getInt("id"));
                         root.add(reportInfo.viewReport(null));
                     }

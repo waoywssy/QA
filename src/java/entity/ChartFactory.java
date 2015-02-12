@@ -27,6 +27,7 @@ public class ChartFactory {
     }
 
     public static Chart getChart(int reportID) {
+        // chart的缓存，若已经访问过则缓存
         if (cachedCharts.containsKey(reportID)) {
             return cachedCharts.get(reportID);
         }

@@ -32,6 +32,7 @@ import util.database.statement.SqlCommand;
 public class QaDataDao {
 
     public void qaBot(int botID) throws SQLException {
+        //botID = 119; // 10033
         boolean success = false;
         String botNameString = null;
         String jobIDs = null;
@@ -40,14 +41,14 @@ public class QaDataDao {
         CachedRowSet newFoundRunsResultSet = null;
         String sql = null;
         try {
-            //1.Get bot info
+            //1. ½«Bots±íÖÐ¶ÔÓ¦µÄbotÉèÖÃ³É×´Ì¬1£¬×îºócheckÊ±¼äÉèÖÃ³Éµ±Ç°
             sql = "UPDATE dbo.Bots SET QaStatus = 1,LastCheckDate = GETDATE() WHERE ID = " + botID;
             SQLHelper.executeCommand(new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, CommandType.Text, sql, new String[0]), null);
+            // DateFinished ÊÇBot×î½üÒ»´ÎrunµÄfinishedÊ±¼ä£¬ ÈôÎªNULLÔòÖ¤Ã÷×î½üÒ»´Î»¹Ã»ÔËÐÐ½áÊø£¬ÐèÒªÔÙ²é¿´µ±Ç°×´Ì¬
             sql = "SELECT *,CASE WHEN DateFinished IS NULL THEN '>=' ELSE '>' END AS Operation FROM dbo.Bots WHERE ID = " + botID;
             resultSet = SQLHelper.executeCommand(new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, CommandType.Text, sql, new String[0]), new CachedRowSetResultHandler());
 
-            paramMap = new MapRowHandler().handle(resultSet);
-
+            paramMap = new MapRowHandler().handle(resultSet); // Ã¿¸öbotÖ»ÓÐÒ»Ìõ¼ÇÂ¼
 
             if (paramMap == null || paramMap.size() == 0) {
                 LogHelper.logInfo("Not found bot info:" + botID);
@@ -57,10 +58,12 @@ public class QaDataDao {
             jobIDs = paramMap.get("JobIDs").toString();
             LogHelper.logInfo("Start QA Bot:" + botNameString + " RunDate:" + paramMap.get("RunDate")
                     + " Operation:" + paramMap.get("Operation"));
-            //2.Get qa scripts
+            //2.»ñÈ¡¸ÃBotµÄQA½Å±¾£¬»ù±¾ÉÏÊÇÒ»ÕÅ±íÒ»¸öquery
             List<ScheduledScript> scheduledScripts = loadScheduledScripts(botID);
             //3.Get new run info from jobcenter
             LogHelper.logInfo("Get new run info from jobcenter");
+            
+            // ´ÓMaj_RunsºÍMaj_Runs_arch±íÖÐÈ¡³ö×î¶à×î½ü10´ÎµÄÔËÐÐ¼ÇÂ¼
             newFoundRunsResultSet = getNewRunsFromJobCentral(paramMap);
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             paramMap.put("QaDate", timestamp);
@@ -73,6 +76,8 @@ public class QaDataDao {
             majRunsScript.name = "Maj_Runs";
             majRunsScript.joinColumn = "RunID";
             majRunsScript.joinRunsColumn = "RunID";
+            
+            // ±£´æJobCentralÉÏµÄRun±íÊý¾Ý
             saveQaData(majRunsScript, jobIDs, newFoundRunsResultSet, (Timestamp) paramMap.get("QaDate"), true);
 
             //4.execute statistic scripts
@@ -83,6 +88,7 @@ public class QaDataDao {
                 String dataBaseName = script.database;
                 LogHelper.logInfo("---" + script.name);
                 CachedRowSet queryCachedRowSet = executeQueryWithRetry(serverIP, dataBaseName, qaScript, paramMap);
+                // ±£´æQAÊý¾Ýµ½±¾µØÊý¾Ý¿â
                 saveQaData(script, jobIDs, queryCachedRowSet, (Timestamp) paramMap.get("QaDate"), true);
             }
 
@@ -101,6 +107,7 @@ public class QaDataDao {
         } finally {
             if (!success) {
                 sql = "UPDATE dbo.Bots SET QaStatus = 0 WHERE ID = " + botID;
+                // ±¾´ÎQAÒâÍâÖÕÖ¹£¬QA½áÊø
                 try {
                     SQLHelper.executeCommand(new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, CommandType.Text, sql, new String[0]), null);
                 } catch (Exception ex) {
@@ -135,7 +142,6 @@ public class QaDataDao {
     }
 
     private CachedRowSet getNewRunsFromJobCentral(HashMap<String, Object> sqlParamMap) throws InterruptedException, SQLException {
-
         String sql = "SELECT TOP 10 A.RunID,A.DateStarted AS RunDate,A.JobID,A.DateFinished,A.Success "
                 + " FROM(SELECT RunID,DateStarted,JobID,DateFinished,Success FROM [JobCentral].[dbo].[Maj_Runs] WITH(nolock) "
                 + " UNION SELECT RunID,DateStarted,JobID,DateFinished,Success FROM [JobCentral].[dbo].[Maj_Runs_arch] WITH(nolock) )AS A"
@@ -145,6 +151,10 @@ public class QaDataDao {
         return executeQueryWithRetry(SQLHelper.JOB_CENTRAL_IP, "JobCentral", sql, sqlParamMap);
     }
 
+    /**
+     * qaResultSet - ×î½ü10´ÎµÄÔËÐÐ½á¹û
+     * 
+     */
     private void saveQaData(ScheduledScript script, String jobIDs, CachedRowSet qaResultSet, Timestamp time, boolean retry) {
         String insertSql = null;
         String[] arguments = null;
@@ -223,7 +233,7 @@ public class QaDataDao {
     }
 
     /*
-     * åŠ è½½ç­‰å¾…QAçš„Bots
+     * ¼ÓÔØµÈ´ýQAµÄBots
      */
     public ArrayList<Integer> getScheduleQuenue() {
         ArrayList<Integer> botIDs = new ArrayList<Integer>();
@@ -241,11 +251,11 @@ public class QaDataDao {
     }
 
     /*
-     * å°†è¶…è¿‡12å°æ—¶æ²¡æœ‰QAè¿‡åº¦BotåŠ å…¥ç­‰å¾…QAé˜Ÿåˆ—
+     * ½«³¬¹ý12/13(¸ù¾ÝÏÄÊ±ÖÆ)Ð¡Ê±Ã»ÓÐQA¹ý¶ÈBot¼ÓÈëµÈ´ýQA¶ÓÁÐ
      */
     public void checkSchedule() {
         try {
-            String sql = "UPDATE dbo.Bots SET [QaStatus] = 2 WHERE [QaStatus] = 0 AND (DATEDIFF(HOUR,[LastQaDate],GETDATE())>12) AND [Disabled]=0";
+            String sql = "UPDATE dbo.Bots SET [QaStatus] = 2 WHERE [QaStatus] = 0 AND (DATEDIFF(HOUR,[LastQaDate],GETDATE())>13) AND [Disabled]=0";
             SQLHelper.executeCommand(new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, CommandType.Text, sql, new String[0]), null);
         } catch (Exception ex) {
             LogHelper.logInfo(ex);
@@ -253,7 +263,7 @@ public class QaDataDao {
     }
 
     /*
-     * åŠ è½½AutoQaScripts
+     * ¼ÓÔØAutoQaScripts
      */
     private List<ScheduledScript> loadScheduledScripts(int botId) throws SQLException {
         List<ScheduledScript> list = new ArrayList<ScheduledScript>();

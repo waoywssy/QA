@@ -40,18 +40,28 @@ Ext.define('qa.BotSchedulePanel', {
                     dataIndex:'QaStatus',
                     type:'int',
                     renderer: function (v, m, r) {
+                        // v 是value，是当前Cell的值
+                        // m 是model, 是当前的行模型对象
+                        // r 是raw, 是当前Cell的原始数据
                         var id = Ext.id();
                         var text='Run';
                         if(v==2){
                             text='Waiting';
                         }else if(v==1){
+                            // 正在QA
                             text='Stop';
                         }
+                        
+                        // 50 miliseconds 后执行方法
+                        // defer( fn, millis, [scope], [args], [appendArgs] ) : Number
                         Ext.defer(function () {
-                            var btn= Ext.widget('button', {
+                            // widget( [name], [config] ) : Object
+                            // Convenient shorthand to create a widget by its xtype or a config object. 
+                            var btn= Ext.widget ('button', {
                                 renderTo: id,
                                 text: text,
                                 width: 75,
+                                // button 的handler用于响应点击事件
                                 handler: function () {
                                     if(this.getText()=='Run'){
                                         var urlStr ='BotScheduleServlet?method=startSchdeule&botID='+r.get('ID');
@@ -63,7 +73,7 @@ Ext.define('qa.BotSchedulePanel', {
                                 }
                             });
                             this.qaStatusBtns.add(r.get('ID'),btn);
-                        }, 50,this);
+                        }, 50, this);
                         return Ext.String.format('<div id="{0}"></div>', id);
                     }
                 },
@@ -78,7 +88,14 @@ Ext.define('qa.BotSchedulePanel', {
                 },
                 {
                     header: 'Checked', 
-                    dataIndex: 'Checked'
+                    dataIndex: 'Checked',
+                    renderer:function(v, m, r){
+                        //console.log(r);
+                        if (v){
+                            return Ext.String.format('<span style="background-color:red;">'+v+'</span>');    
+                        }
+                        return v;
+                    }
                 },
                 {
                     header: 'QaDate', 
@@ -90,7 +107,19 @@ Ext.define('qa.BotSchedulePanel', {
                 },
                 {
                     header: 'Disabled', 
-                    dataIndex: 'Disabled'
+                    dataIndex: 'Disabled',
+                    renderer:function(v, m, r){
+                        if (v){
+                            /*
+                            var record = qaStatusStore.getNodeById(id),
+                            rowIndex = qaStatusStore.indexOf(record);
+                            console.log(record);
+                            */
+                            //this.view.addRowCls(index, 'hide');
+                            //m.classes.put('hide');
+                        }
+                        return v;
+                    }
                 }
                 ],
                 tbar : [{
@@ -124,7 +153,13 @@ Ext.define('qa.BotSchedulePanel', {
                             findText(1);
                             }
                     }
-                },'->' ,
+                }, {
+                    xtype: 'button',
+                    text: 'Hide/Show disabled',
+                    handler: function(){
+                        //console.log('隐藏所有的');
+                    }
+                }, '->' ,
                 {
                     xtype: 'button',
                     text: 'Add',

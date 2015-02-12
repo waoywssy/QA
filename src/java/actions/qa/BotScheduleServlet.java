@@ -60,9 +60,9 @@ public class BotScheduleServlet extends HttpServlet {
                 int id = NumericHelper.toInt(request.getParameter("nodeId"));
                 String sql = null;
                 if (id == -1) {
-                    sql = "SELECT ID,QaStatus FROM dbo.Bots";
+                    sql = "SELECT ID,QaStatus FROM dbo.Bots WHERE Disabled = 0";
                 } else {
-                    sql = "SELECT * FROM dbo.Bots WHERE ID = {0} OR {1} = 0 ORDER BY Sector,BotName ASC";
+                    sql = "SELECT * FROM dbo.Bots WHERE  Disabled = 0 and (ID = {0} OR {1} = 0) ORDER BY Sector,BotName ASC";
                     sql = MessageFormat.format(sql, id, id);
                 }
 
