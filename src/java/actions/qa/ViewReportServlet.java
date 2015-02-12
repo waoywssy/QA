@@ -88,7 +88,7 @@ public class ViewReportServlet extends HttpServlet {
                 out.write(root.toJSONString());
             } else if ("markChecked".equals(method)) {
                 String botID = request.getParameter("BotID");
-                SQLHelper.executeNonQuery(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, "UPDATE Bots SET Checked = 1 WHERE ID = " + botID);
+                SQLHelper.executeNonQuery(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, "UPDATE Bots SET Checked = 1, QaStatus = 0 WHERE ID = " + botID);
             } else if ("showBotServer".equals(method)) {
                 String botID = request.getParameter("BotID");
                 String sql = "SELECT [SERVER]+':'+[DATABASE] FROM dbo.Qa_Queries WHERE ID = (SELECT MAX(QueryID) FROM dbo.ScheduledScripts WHERE BotID = " + botID + ")";

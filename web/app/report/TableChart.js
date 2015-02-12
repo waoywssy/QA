@@ -171,15 +171,20 @@ Ext.define('qa.report.TableChart', {
             tBody += "<tr>";
             var total = json["totalColumn"] == -1 ? null : row[json["totalColumn"]];
             for (var j = 0; j < json["headers"].length; j++) {
-                if (isRunTable && json["headers"][j]['name'] == 'Success'){
-                    console.log(row[j]);
+                if (isRunTable){
+                    if (json["headers"][j]['name'] == 'Success'){
+                        console.log(row[j]);
+                    }
+                    if (json["headers"][j]['name'] == 'Interval'){
+                        row[j] = row[j].toFixed(2);
+                    }    
                 }
-                
+
                 if (!json["headers"][j]["show"]) {
                     tBody += "<td style='display:none;'></td>";
-                } else if (startRow == 1//从第一行开始分�?
-                    || (startRow == 0 && i == 0)//只分析第一�?
-                    || (startRow == 2 && i != 0)) //从第二行开始分�?
+                } else if (startRow == 1
+                    || (startRow == 0 && i == 0)
+                    || (startRow == 2 && i != 0))
                 {
                     var err = this.validateValue(row[j], total, json["headers"][j]);
                     if (!hasError && err == " class='error'"){

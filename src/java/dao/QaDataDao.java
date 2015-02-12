@@ -255,7 +255,7 @@ public class QaDataDao {
      */
     public void checkSchedule() {
         try {
-            String sql = "UPDATE dbo.Bots SET [QaStatus] = 2 WHERE [QaStatus] = 0 AND (DATEDIFF(HOUR,[LastQaDate],GETDATE())>13) AND [Disabled]=0";
+            String sql = "UPDATE dbo.Bots SET [QaStatus] = 2, checked = 0 WHERE [QaStatus] = 0 AND (DATEDIFF(HOUR,[LastQaDate],GETDATE())>13) AND [Disabled]=0";
             SQLHelper.executeCommand(new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, CommandType.Text, sql, new String[0]), null);
         } catch (Exception ex) {
             LogHelper.logInfo(ex);
