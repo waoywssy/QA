@@ -44,10 +44,10 @@ public class ViewReportServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        response.setContentType("application/json;charset=utf-8"); //json数据
 
         PrintWriter out = response.getWriter();
         String method = request.getParameter("method");
-        response.setContentType("application/json;charset=utf-8"); //json数据
         try {
             if ("view".equals(method)) {
 
