@@ -1,0 +1,181 @@
+<html>
+    <head>
+        <title>QA</title>
+
+        <link rel="shortcut icon" type="image/ico" href="/favicon.ico" />
+        <!--link rel="stylesheet" href="ext/resources/css/ext-all.css" type="text/css" /-->
+        <link rel="stylesheet" href="ext/resources/ext-theme-neptune/ext-theme-neptune-all.css" type="text/css" />
+        <link rel="stylesheet" href="ext/ux/css/TabScrollerMenu.css" type="text/css" />
+        <link rel="stylesheet" href="css/main.css" type="text/css" />
+        <link rel="stylesheet" href="ext/example.css" type="text/css" />
+        <script type="text/javascript" src="ext/ext-all.js"></script>
+        <script type="text/javascript" src="ext/examples.js"></script>
+        <script type="text/javascript" src="app/share.js"></script>
+        <script type="text/javascript">
+            Ext.Loader.setPath('Ext.ux', 'ext/ux/');
+            Ext.Loader.setPath('qa', 'app');
+
+            Ext.require([
+                'Ext.tip.*',
+                'Ext.ux.TabCloseMenu',
+                'Ext.ux.IFrame',
+                'Ext.ux.TabScrollerMenu',
+                'qa.SettingTreePanel',
+                'qa.QaResultTreePanel',
+                'qa.QueryEditor',
+                'qa.ScheduledScriptPanel',
+                'qa.ToolsTreePanel',
+                'qa.NoteEditor',
+                'qa.report.*',
+                'qa.reportdesign.*'
+            ]);
+
+            var globalFinalVariables = new Ext.util.MixedCollection();
+            var standardValueSetting;
+            var infoTip;
+            Ext.onReady(function() {
+                standardValueSetting = Ext.create('qa.StandardValueSetting');
+                infoTip = Ext.create('Ext.tip.ToolTip', {
+                    width: 400,
+                    trackMouse: false,
+                    loader: {
+                        url: 'TreeNodeServlet?method=showNote',
+                        renderer: function(loader, response, active) {
+                            var text = response.responseText;
+                            loader.getTarget().update(text);
+                            return true;
+                        }
+                    },
+                    dismissDelay: 15000 // auto hide after 15 seconds
+                });
+                Ext.QuickTips.init();
+
+                Ext.Ajax.request({
+                    url: 'data/globalFinalVariables.xml',
+                    success: function(response) {
+                        var xml = response.responseXML;
+                        var dq = Ext.DomQuery;
+                        var node = dq.selectNode('root', xml);
+                        node = node.firstElementChild;
+                        do {
+                            globalFinalVariables.add(node.nodeName, node.textContent);
+                            node = node.nextElementSibling;
+                        } while (node)
+                    }
+                });
+                Ext.Ajax.addListener('requestexception', function(conn, response, options, eOpts) {
+                    alert('network problem');
+                });
+
+                window.viewport = Ext.create('Ext.Viewport', {
+                    layout: 'border',
+                    items: [{
+                            region: 'west',
+                            stateId: 'navigation-panel',
+                            itemId: 'west-panel', // see Ext.getCmp() below
+                            split: true,
+                            width: 250,
+                            maxWidth: 400,
+                            collapsible: true,
+                            animCollapse: true,
+                            margins: '0 0 0 5',
+                            layout: 'accordion',
+                            items: [{
+                                    xtype: 'qaresulttreepanel'
+                                }, {
+                                    xtype: 'settingtreepanel'
+                                }, {
+                                    xtype: 'toolstreepanel'
+                                }]
+                        }, //end west
+                        {
+                            itemId: 'centerTabPanel',
+                            xtype: 'tabpanel',
+                            region: 'center', // a center region is ALWAYS required for border layout
+                            activeTab: 0,
+                            defaults: {
+                                //overflowY:'auto',
+                                bodyPadding: 10
+                            },
+                            layout: 'fit',
+                            plugins: [{
+                                    ptype: 'tabscrollermenu',
+                                    maxText: 50,
+                                    pageSize: 20
+                                }, {
+                                    ptype: 'tabclosemenu',
+                                    extraItemsTail: [
+                                        '-',
+                                        {
+                                            text: 'Closable',
+                                            checked: true,
+                                            hideOnClick: true,
+                                            handler: function(item) {
+                                                currentItem.tab.setClosable(item.checked);
+                                            }
+                                        },
+                                        '-',
+                                        {
+                                            text: 'Enabled',
+                                            checked: true,
+                                            hideOnClick: true,
+                                            handler: function(item) {
+                                                currentItem.tab.setDisabled(!item.checked);
+                                            }
+                                        }
+                                    ],
+                                    listeners: {
+                                        aftermenu: function() {
+                                            currentItem = null;
+                                        },
+                                        beforemenu: function(menu, item) {
+                                            var enabled = menu.child('[text="Enabled"]');
+                                            menu.child('[text="Closable"]').setChecked(item.closable);
+                                            if (item.tab.active) {
+                                                enabled.disable();
+                                            } else {
+                                                enabled.enable();
+                                                enabled.setChecked(!item.tab.isDisabled());
+                                            }
+
+                                            currentItem = item;
+                                        }
+                                    }
+                                }]
+                        }]
+                });
+
+                window.notepad = Ext.create('qa.NoteEditor');
+
+                document.onkeydown = function(e) {
+                    var ev = window.event || e;
+                    var code = ev.keyCode || ev.which;
+                    if (code != 116 && (code != 83 && e.ctrlKey != true)) {
+                        return;
+                    }
+                    var tab = window.viewport.getComponent("centerTabPanel").getActiveTab();
+                    if (tab.isEditor) {
+                        if (code == 116) {
+                            try {
+                                tab.executeQuery();
+                            } catch (e) {
+                                console.log(e);
+                            }
+                            cancelBubble = true;
+                            return false;
+                        } else if (e.ctrlKey == true && code == 83) {
+                            tab.saveQuery();
+                            cancelBubble = true;
+                            return false;
+                        }
+                    }
+                }
+                Ext.QuickTips.init();
+            });
+        </script>
+
+    </head>
+    <body>
+
+    </body>
+</html>

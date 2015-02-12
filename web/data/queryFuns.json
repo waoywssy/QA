@@ -1,0 +1,138 @@
+[
+    {
+        "Id": 0,
+        "Name": "TotalItem",
+        "Desc": "COUNT(*)",
+        "Fun": "COUNT(*)",
+        "Params": 1,
+        "Consts": 0
+    },
+    {
+        "Id": 1,
+        "Name": "Min",
+        "Desc": "Min(x)",
+        "Fun": "MIN({0})",
+        "Params": 1,
+        "Consts": 0
+    },
+    {
+        "Id": 2,
+        "Name": "Max",
+        "Desc": "Max(x)",
+        "Fun": "MAX({0})",
+        "Params": 1,
+        "Consts": 0
+    },
+    {
+        "Id": 3,
+        "Name": "Avg",
+        "Desc": "Avg(x)",
+        "Fun": "AVG({0})",
+        "Params": 1,
+        "Consts": 0
+    },
+    {
+        "Id": 4,
+        "Name": "Sum",
+        "Desc": "Sum(x)",
+        "Fun": "SUM({0})",
+        "Params": 1,
+        "Consts": 0
+    },
+    {
+        "Id": 5,
+        "Name": "Total",
+        "Desc": "Count(x)",
+        "Fun": "COUNT({0})",
+        "Params": 1,
+        "Consts": 0
+    },
+    {
+        "Id": 6,
+        "Name": "TotalDif",
+        "Desc": "Count(Distinct x)",
+        "Fun": "COUNT(DISTINCT {0})",
+        "Params": 1,
+        "Consts": 0
+    },
+    {
+        "Id": 7,
+        "Name": "TotalNull",
+        "Desc": "Count(x is null)",
+        "Fun": "COUNT(CASE WHEN {0} IS NULL THEN 1 ELSE NULL END)",
+        "Params": 1,
+        "Consts": 0
+    },
+    {
+        "Id": 8,
+        "Name": "TotalNotEmpty",
+        "Desc": "Count(Len(x)&gt;0)",
+        "Fun": "COUNT(CASE WHEN LEN({0})>0 THEN 1 ELSE NULL END)",
+        "Params": 1,
+        "Consts": 0
+    },
+    {
+        "Id": 9,
+        "Name": "TotalEmpty",
+        "Desc": "Count(Len(x)==0)",
+        "Fun": "COUNT(CASE WHEN LEN({0})>0 THEN NULL ELSE 1 END)",
+        "Params": 1,
+        "Consts": 0
+    },
+    {
+        "Id": 10,
+        "Name": "MinLen",
+        "Desc": "MinLen(x)",
+        "Fun": "MIN(LEN({0}))",
+        "Params": 1,
+        "Consts": 0
+    },
+    {
+        "Id": 11,
+        "Name": "MaxLen",
+        "Desc": "MaxLen(x)",
+        "Fun": "MAX(LEN({0}))",
+        "Params": 1,
+        "Consts": 0
+    },
+    {
+        "Id": 12,
+        "Name": "TotalBiggerAB",
+        "Desc": "Count(A&gt;B)",
+        "Fun": "COUNT(CASE WHEN {0}>{1} THEN 1 ELSE NULL END) ",
+        "Params": 2,
+        "Consts": 0
+    },
+    {
+        "Id": 13,
+        "Name": "TotalAllNull",
+        "Desc": "Count(A&B is null)",
+        "Fun": "COUNT(CASE WHEN {0} IS NULL AND {1} IS NULL THEN 1 ELSE NULL END) ",
+        "Params": 2,
+        "Consts": 0
+    },
+    {
+        "Id": 14,
+        "Name": "TotalBigger",
+        "Desc": "Count(A&gt;a)",
+        "Fun": "COUNT(CASE WHEN {0}>{a} THEN 1 ELSE NULL END) ",
+        "Params": 1,
+        "Consts": 1
+    },
+    {
+        "Id": 15,
+        "Name": "Totalx",
+        "Desc": "Count(A==a)",
+        "Fun": "COUNT(CASE WHEN {0}={a} THEN 1 ELSE null END) ",
+        "Params": 1,
+        "Consts": 1
+    },
+    {
+        "Id": 16,
+        "Name": "TotalBetween",
+        "Desc": "Count(b&lt;A&lt;a)",
+        "Fun": "COUNT(CASE WHEN {0} BETWEEN {a} AND {b} THEN 1 ELSE NULL END) ",
+        "Params": 1,
+        "Consts": 2
+    }
+]

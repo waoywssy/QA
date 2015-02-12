@@ -1,0 +1,69 @@
+<root>
+    <pathCTE>
+	<![CDATA[
+----------------BEGIN CTE-----------------	
+    SET NOCOUNT ON ;	
+DECLARE @TreeNodeTable TABLE(
+    CatId varchar(40)
+    ,ParentCatId varchar(40)
+    ,CatName nvarchar(200)
+    ,CatLevel int
+    ,RunDate DATETIME
+    ,Lvl1  nvarchar(200)
+    ,Lvl2  nvarchar(200)
+    ,Lvl3  nvarchar(200)
+    ,Lvl4  nvarchar(200)
+    ,Lvl5  nvarchar(200)
+    ,Lvl6  nvarchar(200)
+    ,Lvl7  nvarchar(200)
+    ,Lvl8  nvarchar(200)
+    ,Lvl9  nvarchar(200)
+    ,Lvl10  nvarchar(200)
+    ,Url varchar(500)
+)
+
+INSERT @TreeNodeTable(CatId,ParentCatId,CatName,CatLevel,RunDate,Url)
+    SELECT TOP 1000 CAST(CatID AS VARCHAR(20)),CAST(ParentCatID AS VARCHAR(20))
+    ,CatName ,CatLevel ,LastFound ,Url
+    FROM dbo.RetailListing_JCPenneyPrice_Categories_Static;
+
+--SELECT * FROM @TreeNodeTable
+
+WITH Paths(CatId, ParentCatId, CatName, CatLevel, Lvl1,Lvl2,Lvl3,Lvl4,Lvl5,Lvl6,Lvl7,Lvl8,Lvl9,Lvl10)
+AS
+(
+    SELECT CatId , ParentCatId, CatName, CatLevel,
+    CatName AS Lvl1,Lvl2,Lvl3,Lvl4,Lvl5,Lvl6,Lvl7,Lvl8,Lvl9,Lvl10
+    FROM @TreeNodeTable
+    WHERE CatLevel = 1
+    UNION ALL
+    SELECT B.CatId, B.ParentCatId, B.CatName, B.CatLevel,
+    A.Lvl1,
+    CASE WHEN B.CatLevel = 2 THEN B.CatName ELSE A.Lvl2 END,
+    CASE WHEN B.CatLevel = 3 THEN B.CatName ELSE A.Lvl3 END,
+    CASE WHEN B.CatLevel = 4 THEN B.CatName ELSE A.Lvl4 END,
+    CASE WHEN B.CatLevel = 5 THEN B.CatName ELSE A.Lvl5 END,
+    CASE WHEN B.CatLevel = 6 THEN B.CatName ELSE A.Lvl6 END,
+    CASE WHEN B.CatLevel = 7 THEN B.CatName ELSE A.Lvl7 END,
+    CASE WHEN B.CatLevel = 8 THEN B.CatName ELSE A.Lvl8 END,
+    CASE WHEN B.CatLevel = 9 THEN B.CatName ELSE A.Lvl9 END,
+    CASE WHEN B.CatLevel = 10 THEN B.CatName ELSE A.Lvl10 END
+    FROM Paths AS A
+    INNER JOIN @TreeNodeTable AS B
+    ON A.CatId = B.ParentCatId AND A.CatLevel = B.CatLevel - 1
+)
+
+UPDATE @TreeNodeTable
+    SET Lvl1 = D.Lvl1,Lvl2 = D.Lvl2,Lvl3 = D.Lvl3, Lvl4 = D.Lvl4, Lvl5 = D.Lvl5
+    , Lvl6 = D.Lvl6, Lvl7 = D.Lvl7, Lvl8 = D.Lvl8, Lvl9 = D.Lvl9, Lvl10 = D.Lvl10
+    FROM @TreeNodeTable AS C
+    INNER JOIN Paths AS D
+    ON C.CatId = D.CatId AND C.CatLevel = D.CatLevel;
+
+SELECT * FROM @TreeNodeTable
+ORDER BY Lvl1,Lvl2,Lvl3,Lvl4,Lvl5;
+
+---------------END CTE-----------
+	]]>
+    </pathCTE>
+</root>

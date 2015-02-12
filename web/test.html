@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="ext/resources/ext-theme-neptune/ext-theme-neptune-all.css" type="text/css" />
+        <script type="text/javascript" src="ext/ext-all.js"></script>
+        <script type="text/javascript">
+            Ext.Loader.setPath('qa', 'app/');
+
+            Ext.onReady(function() {
+                var p = Ext.create('Ext.panel.Panel', {
+                    title: 'Hello',
+                    width: 200,
+                    html: '<p>World!</p>',
+                    renderTo: Ext.getBody(),
+                    listeners: {
+                        click: function() {
+                            console.log('click');
+                        }
+                    }
+                });
+                p.addListener("onclick", function() {
+                    console.log('click1');
+                }, this);
+            })
+        </script>
+    </head>
+    <body>
+        <div onclick="" id="tets">TODO write content</div>
+        <input type="button" value="Show" onclick="showMenu()"/>
+    </body>
+</html>

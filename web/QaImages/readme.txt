@@ -1,0 +1,1 @@
+this folder for query result images
