@@ -166,9 +166,11 @@ Ext.define('qa.report.TableChart', {
         //table content
         tBody = '';
         var startRow = json.startRow;
+        var trClass = '';
         for (var i = 0; json["values"] && i < json["values"].length; i++) {
             var row = json["values"][i];
-            tBody += "<tr>";
+            trClass = (i % 2 == 0) ? " class='even'":""; //为革命保护视�?
+            tBody += "<tr" + trClass + ">";
             var total = json["totalColumn"] == -1 ? null : row[json["totalColumn"]];
             for (var j = 0; j < json["headers"].length; j++) {
                 if (isRunTable){
@@ -177,7 +179,7 @@ Ext.define('qa.report.TableChart', {
                     }
                     if (json["headers"][j]['name'] == 'Interval'){
                         row[j] = row[j].toFixed(2);
-                    }    
+                    }
                 }
 
                 if (!json["headers"][j]["show"]) {

@@ -36,13 +36,17 @@
     padding: 3px;
     background: #CAE8EA url('../icons/bg_header.jpg') no-repeat;
 }
-.qaResult th a { color:black;; }  
+.qaResult th a { color:black; }  
+
+.qaResult tr.even{
+    background-color:#CAE8EA;
+}
 
 .qaResult td {
     border-right: 1px solid #C1DAD7;
     border-bottom: 1px solid #C1DAD7;
     /*	background: #fff;*/
-    padding: 0px 0px 0px 5px;
+    padding: 2px 5px 2px 2px;
     /*	color: #4f6b72;*/
 }
 
@@ -183,3 +187,13 @@ p {
     height:13px;
     padding:0px 0px 0px 3px;
 }
+.hide{
+    display:none!important;
+}
+.show{
+    display: block!important;
+}
+.right{
+    text-align: right; 
+}
+ 
