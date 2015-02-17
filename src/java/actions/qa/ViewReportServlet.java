@@ -69,22 +69,7 @@ public class ViewReportServlet extends HttpServlet {
                 }
             } else if ("viewDefault".equals(method)) {
                 int botID = Integer.parseInt(request.getParameter("node"));
-                JSONArray root = new JSONArray();
-                JSONObject error = new JSONObject();
-                try {
-                    TableChart tableChart = new TableChart(-botID); // Run表
-                    root.add(tableChart.viewReport(null));
-                    SqlCommand command = new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, CommandType.Text, "SELECT id FROM dbo.Nodes WHERE nodeType=15 AND parentId=(SELECT id FROM dbo.Nodes WHERE nodeType=-15 AND refer = " + botID + ")");
-                    CachedRowSet rowSet = SQLHelper.executeCommand(command, new CachedRowSetResultHandler());
-                    while (rowSet.next()) {
-                        // 添加所有的Report表
-                        Chart reportInfo = ChartFactory.getChart(rowSet.getInt("id"));
-                        root.add(reportInfo.viewReport(null));
-                    }
-                } catch (Exception sQLException) {
-                    error.put("error", sQLException.getMessage());
-                    root.add(error);
-                }
+                JSONArray root = getReportDefaultJson(botID);
                 out.write(root.toJSONString());
             } else if ("markChecked".equals(method)) {
                 String botID = request.getParameter("BotID");
@@ -149,4 +134,24 @@ public class ViewReportServlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+
+    protected JSONArray getReportDefaultJson(int botID) throws NumberFormatException {
+        JSONArray root = new JSONArray();
+        JSONObject error = new JSONObject();
+        try {
+            TableChart tableChart = new TableChart(-botID); // Run表
+            root.add(tableChart.viewReport(null));
+            SqlCommand command = new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, CommandType.Text, "SELECT id FROM dbo.Nodes WHERE nodeType=15 AND parentId=(SELECT id FROM dbo.Nodes WHERE nodeType=-15 AND refer = " + botID + ")");
+            CachedRowSet rowSet = SQLHelper.executeCommand(command, new CachedRowSetResultHandler());
+            while (rowSet.next()) {
+                // 添加所有的Report表
+                Chart reportInfo = ChartFactory.getChart(rowSet.getInt("id"));
+                root.add(reportInfo.viewReport(null));
+            }
+        } catch (Exception sQLException) {
+            error.put("error", sQLException.getMessage());
+            root.add(error);
+        }
+        return root;
+    }
 }

@@ -8,13 +8,18 @@ Ext.define('qa.QaResultTreePanel', {
     hideHeaders: true,
     requires:['qa.store.QaResultTreeStore'],
     initComponent : function() {
-
         Ext.apply(this, {
             store: new qa.store.QaResultTreeStore(), 
             columns: [{
                 xtype: 'treecolumn', //this is so we know which column will show the tree
-                width:1000,
+                width: 1000,
                 dataIndex: 'name'
+                ,renderer: function(value, record, param1){
+                    if (param1.raw.iconCls=='bot' && param1.raw.needsQA){
+                        return Ext.String.format('<span class="error">{0}</span>', value);    
+                    }
+                    return value;
+                }
             }],
             viewConfig: {
                 style: {
@@ -26,7 +31,7 @@ Ext.define('qa.QaResultTreePanel', {
                         if(record.data.nodeType!=3){
                             return;
                         }
-                        var tabPanel= this.ownerCt.ownerCt.ownerCt.child('tabpanel');
+                        var tabPanel = this.ownerCt.ownerCt.ownerCt.child('tabpanel');
                         var tab = tabPanel.child("[title='"+record.data.name+"']");
                         if(tab){
                             tabPanel.setActiveTab(tab);

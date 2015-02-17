@@ -20,6 +20,8 @@ import util.database.hanlders.impl.MapRowHandler;
 import util.database.hanlders.impl.UniqueResultHandler;
 import util.database.statement.CommandType;
 import util.database.statement.SqlCommand;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -55,9 +57,28 @@ public class TreeNodeServlet extends HttpServlet {
             } else if ("getQaResultNode".equals(method)) {
                 HashMap<String, Object> sqlParamMap = new HashMap<String, Object>();
                 sqlParamMap.put("parentId", Integer.parseInt(request.getParameter("node")));
-
                 SqlCommand command = new SqlCommand(SQLHelper.LOCAL_IP, SQLHelper.DB_QA, CommandType.StoredProcedure, "sp_getQaResultNode", sqlParamMap);
-                out.print(SQLHelper.executeCommand(command, new JSONResultHandler()));
+
+                JSONArray root = SQLHelper.executeCommand(command, new JSONResultHandler());
+                
+                ViewReportServlet vrs  = new ViewReportServlet();
+                for (int i = 0; i < root.size(); i++) {
+                    JSONObject bot = (JSONObject)root.get(i);
+                    if (bot.get("iconCls").toString().equals("bot")){
+                        int botID = Integer.parseInt(bot.get("refer").toString());
+                        
+                        if (botID == 14){
+                            int test = 1;
+                        }
+                        
+                        JSONArray report = vrs.getReportDefaultJson(botID);
+                        if (isReportNeedsChecking(report)){
+                            bot.put("needsQA", true);
+                        }
+                    }
+                }
+                
+                out.print(root);
             } else if ("addFolder".equals(method)) {
                 HashMap<String, Object> sqlParamMap = new HashMap<String, Object>();
                 sqlParamMap.put("node", Integer.parseInt(node));
@@ -125,6 +146,104 @@ public class TreeNodeServlet extends HttpServlet {
             out.close();
         }
     }
+    
+    private Boolean isReportNeedsChecking(JSONArray reports){
+        try
+        {
+            for (int i = 0; i < reports.size(); i++) {
+                JSONObject report = (JSONObject)reports.get(i);
+
+                if (report.get("values")==null){
+                    return true;
+                }
+                JSONArray values = (JSONArray)report.get("values");
+                if (values.size() <= 0){
+                    // any table that doesn't get any data, needs QA
+                    return true;
+                }
+                int indexOfTotalColumn = -1;
+                if (isNumeric(report.get("totalColumn").toString())){
+                    indexOfTotalColumn = Integer.parseInt(report.get("totalColumn").toString());
+                }
+                int startRow = 0;
+                if (isNumeric(report.get("startRow").toString())){
+                    startRow = Integer.parseInt(report.get("startRow").toString());
+                }
+                
+                JSONArray headers = (JSONArray)report.get("headers");
+                for (int j = 0; j < headers.size(); j++) {
+                    JSONObject header = (JSONObject)headers.get(j);
+                    
+                    if (header.get("show") == null 
+                            || !header.get("show").toString().equals("true")){
+                        continue;
+                    }
+                    
+                    String minStr = header.get("min") == null ? "null" : header.get("min").toString();
+                    String maxStr = header.get("max") == null ? "null" : header.get("max").toString();
+                    String minpStr = header.get("minp") == null ? "null" : header.get("minp").toString();
+                    String maxpStr = header.get("maxp") == null ? "null" : header.get("maxp").toString();
+
+                    for (int m = 0; m < values.size(); m++) {
+                        JSONArray valueRow = (JSONArray)values.get(m);
+                        
+                        if (startRow == 1
+                            || (startRow == 0 && m == 0)
+                            || (startRow == 2 && m != 0)) {
+                            // can check data
+                        } 
+                        else
+                            continue;
+                        
+                        if (valueRow.get(j) == null)
+                            continue;
+                        
+                        if (!isNumeric(valueRow.get(j).toString())){
+                            // if the value is not a number, like a date, no need to check
+                            break;
+                        }
+
+                        int total = indexOfTotalColumn == -1 ? -1 : 
+                                Integer.parseInt(valueRow.get(indexOfTotalColumn).toString());
+                        try
+                        {
+                            Double rowValue = Double.parseDouble(valueRow.get(j).toString());
+                            if (!minStr.equals("null") && rowValue < Double.parseDouble(minStr)) {
+                                return true;
+                            }
+                            if (!maxStr.equals("null") && rowValue > Double.parseDouble(maxStr)) {
+                                return true;
+                            }
+                            if (total > 0) {
+                                if (rowValue > 0 && !minpStr.equals("null") && rowValue * 100 / total < Double.parseDouble(minpStr)) {
+                                    return true;
+                                }
+
+                                if (rowValue > 0  && !maxpStr.equals("null") && rowValue * 100 / total > Double.parseDouble(maxpStr)) {
+                                    return true;
+                                }
+                            }
+                        }
+                        catch(Exception ex){
+                            total = -1;
+                        }
+                    }
+                }
+            }
+        }
+        catch(Exception ex){
+            int test = 1;
+        }
+        return false;
+    }
+    
+    private Boolean isNumeric(String str)
+    { 
+        //match a number with optional '-' and decimal.
+        return str.matches("-?\\d+(\\.\\d+)?");  
+    } 
+
+    
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**

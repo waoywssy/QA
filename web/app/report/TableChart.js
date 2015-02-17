@@ -171,7 +171,9 @@ Ext.define('qa.report.TableChart', {
             var row = json["values"][i];
             trClass = (i % 2 == 0) ? " class='even'":""; //为革命保护视�?
             tBody += "<tr" + trClass + ">";
-            var total = json["totalColumn"] == -1 ? null : row[json["totalColumn"]];
+
+            // json["totalColumn"] is the index of the 'totalColumn' in the json array
+            var total = json["totalColumn"] == -1 ? null : row[json["totalColumn"]]; 
             for (var j = 0; j < json["headers"].length; j++) {
                 if (isRunTable){
                     if (json["headers"][j]['name'] == 'Success'){
