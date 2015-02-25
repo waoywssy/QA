@@ -169,7 +169,7 @@ Ext.define('qa.report.TableChart', {
         var trClass = '';
         for (var i = 0; json["values"] && i < json["values"].length; i++) {
             var row = json["values"][i];
-            trClass = (i % 2 == 0) ? " class='even'":""; //为革命保护视�?
+            trClass = (i % 2 == 1) ? " class='even'":""; //为革命保护视�?
             tBody += "<tr" + trClass + ">";
 
             // json["totalColumn"] is the index of the 'totalColumn' in the json array
@@ -217,11 +217,11 @@ Ext.define('qa.report.TableChart', {
             value = 0;
         }
 
-        if (validator["min"] && value < validator["min"]) {
+        if ((validator["min"] || validator["min"]==0) && value < validator["min"]) {
             return this.error;
         }
 
-        if (validator["max"] && value > validator["max"]) {
+        if ((validator["max"] || validator["max"]==0) && value > validator["max"]) {
             return this.error;
         }
 
